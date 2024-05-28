@@ -1,11 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 import { useQuery, useMutation, useQueryClient, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React from "react";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_PROJECT_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_API_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-import React from "react";
 export const queryClient = new QueryClient();
 export function SupabaseProvider({ children }) {
     return React.createElement(QueryClientProvider, { client: queryClient }, children);
@@ -17,35 +17,45 @@ const fromSupabase = async (query) => {
     return data;
 };
 
-/* supabase integration types
+// Types
+export type Foo = {
+    id: number;
+    title: string;
+    bars?: Bar[];
+};
 
-// EXAMPLE TYPES SECTION
+export type Bar = {
+    id: number;
+    foo_id: number;
+};
 
-Foo // table: foos
-    id: number
-    title: string
-    bars?: Bar[] // available if .select('*,bars(*)') was done
+// Hooks
+export const useFoos = () => useQuery({
+    queryKey: ['foos'],
+    queryFn: () => fromSupabase(supabase.from('foos').select('*, bars(*)')),
+});
 
-Bar // table: bars
-    id: number
-    foo_id: number // foreign key to Foo
-	
-*/
-
-// hooks
-
-// EXAMPLE HOOKS SECTION
-
-export const useFoo = ()=> useQuery({
-    queryKey: ['foo'],
-    queryFn: fromSupabase(supabase.from('foo').select('*,bars(*)')),
-})
 export const useAddFoo = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (newFoo)=> fromSupabase(supabase.from('foo').insert([{ title: newFoo.title }])),
-        onSuccess: ()=> {
-            queryClient.invalidateQueries('foo');
+        mutationFn: (newFoo) => fromSupabase(supabase.from('foos').insert([newFoo])),
+        onSuccess: () => {
+            queryClient.invalidateQueries('foos');
+        },
+    });
+};
+
+export const useBars = (fooId) => useQuery({
+    queryKey: ['bars', fooId],
+    queryFn: () => fromSupabase(supabase.from('bars').select('*').eq('foo_id', fooId)),
+});
+
+export const useAddBar = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (newBar) => fromSupabase(supabase.from('bars').insert([newBar])),
+        onSuccess: () => {
+            queryClient.invalidateQueries('bars');
         },
     });
 };
