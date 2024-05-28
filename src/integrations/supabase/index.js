@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { useQuery, useMutation, useQueryClient, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from "react";
+import { Foo, Bar } from './types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_PROJECT_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_API_KEY;
@@ -17,17 +18,7 @@ const fromSupabase = async (query) => {
     return data;
 };
 
-// Types
-export type Foo = {
-    id: number;
-    title: string;
-    bars?: Bar[];
-};
 
-export type Bar = {
-    id: number;
-    foo_id: number;
-};
 
 // Hooks
 export const useFoos = () => useQuery({
