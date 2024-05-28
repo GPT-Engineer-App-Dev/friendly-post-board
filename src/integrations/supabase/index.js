@@ -1,11 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 import { useQuery, useMutation, useQueryClient, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React from "react";
+import { Post, Reaction } from './types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_PROJECT_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_API_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-import React from "react";
 export const queryClient = new QueryClient();
 export function SupabaseProvider({ children }) {
     return React.createElement(QueryClientProvider, { client: queryClient }, children);
@@ -17,35 +18,35 @@ const fromSupabase = async (query) => {
     return data;
 };
 
-/* supabase integration types
 
-// EXAMPLE TYPES SECTION
 
-Foo // table: foos
-    id: number
-    title: string
-    bars?: Bar[] // available if .select('*,bars(*)') was done
+// Hooks
+export const usePosts = () => useQuery({
+    queryKey: ['posts'],
+    queryFn: () => fromSupabase(supabase.from('posts').select('*, reactions(*)')),
+});
 
-Bar // table: bars
-    id: number
-    foo_id: number // foreign key to Foo
-	
-*/
-
-// hooks
-
-// EXAMPLE HOOKS SECTION
-
-export const useFoo = ()=> useQuery({
-    queryKey: ['foo'],
-    queryFn: fromSupabase(supabase.from('foo').select('*,bars(*)')),
-})
-export const useAddFoo = () => {
+export const useAddPost = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (newFoo)=> fromSupabase(supabase.from('foo').insert([{ title: newFoo.title }])),
-        onSuccess: ()=> {
-            queryClient.invalidateQueries('foo');
+        mutationFn: (newPost) => fromSupabase(supabase.from('posts').insert([newPost])),
+        onSuccess: () => {
+            queryClient.invalidateQueries('posts');
+        },
+    });
+};
+
+export const useReactions = (postId) => useQuery({
+    queryKey: ['reactions', postId],
+    queryFn: () => fromSupabase(supabase.from('reactions').select('*').eq('post_id', postId)),
+});
+
+export const useAddReaction = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (newReaction) => fromSupabase(supabase.from('reactions').insert([newReaction])),
+        onSuccess: () => {
+            queryClient.invalidateQueries('reactions');
         },
     });
 };
