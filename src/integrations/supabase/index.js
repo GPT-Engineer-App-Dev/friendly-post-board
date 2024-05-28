@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { useQuery, useMutation, useQueryClient, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from "react";
-import { Foo, Bar } from './types';
+import { Post, Reaction } from './types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_PROJECT_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_API_KEY;
@@ -21,32 +21,32 @@ const fromSupabase = async (query) => {
 
 
 // Hooks
-export const useFoos = () => useQuery({
-    queryKey: ['foos'],
-    queryFn: () => fromSupabase(supabase.from('foos').select('*, bars(*)')),
+export const usePosts = () => useQuery({
+    queryKey: ['posts'],
+    queryFn: () => fromSupabase(supabase.from('posts').select('*, reactions(*)')),
 });
 
-export const useAddFoo = () => {
+export const useAddPost = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (newFoo) => fromSupabase(supabase.from('foos').insert([newFoo])),
+        mutationFn: (newPost) => fromSupabase(supabase.from('posts').insert([newPost])),
         onSuccess: () => {
-            queryClient.invalidateQueries('foos');
+            queryClient.invalidateQueries('posts');
         },
     });
 };
 
-export const useBars = (fooId) => useQuery({
-    queryKey: ['bars', fooId],
-    queryFn: () => fromSupabase(supabase.from('bars').select('*').eq('foo_id', fooId)),
+export const useReactions = (postId) => useQuery({
+    queryKey: ['reactions', postId],
+    queryFn: () => fromSupabase(supabase.from('reactions').select('*').eq('post_id', postId)),
 });
 
-export const useAddBar = () => {
+export const useAddReaction = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (newBar) => fromSupabase(supabase.from('bars').insert([newBar])),
+        mutationFn: (newReaction) => fromSupabase(supabase.from('reactions').insert([newReaction])),
         onSuccess: () => {
-            queryClient.invalidateQueries('bars');
+            queryClient.invalidateQueries('reactions');
         },
     });
 };
