@@ -1,7 +1,6 @@
 import { Box, Container, VStack, HStack, Text, Input, Button, Flex, Heading, Spinner, Alert, AlertIcon } from "@chakra-ui/react";
 import { useState } from "react";
 import { usePosts, useAddPost } from "../integrations/supabase";
-import { useState } from "react";
 
 const Index = () => {
   const { data: posts, isLoading, isError, error } = usePosts();
